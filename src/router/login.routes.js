@@ -1,4 +1,6 @@
 import Express  from "express";
+import logger from "../logs/logger.js";
+import passportAuth  from "./middleware/autho.js";
 
 /* ------------------------ configuracion del routerProducts ------------------------ */
 export const routerLogin = Express.Router();
@@ -10,16 +12,31 @@ routerLogin.use(Express.urlencoded({extended: true}))
 // Me permite listar todos los productos disponibles
 /* -------------- (disponible para usuarios y administradores) -------------- */
 
-routerLogin.get('/', async (req, res)=>{
+routerLogin.post('/', async (req, res)=>{ passportAuth.authenticate(
+                'loginStrategy', {failureRedirect: '/', failureMessage: true },
+                (error, user , info)=>{
+                if(error || !user){
+                    return res.json(info)
+                }
+                if(user){
+                    req.logIn(user, function(error){
+                        if(error) return res.json({message:"hubo un error al autenticar al usuario"});
+                        else return res.json({message: "Se logueo el user: " + req.body.email})
+                })
+            }
+        })(req, res)
+    }, )
+
+routerLogin.delete('/logout', (req, res)=>{
     try{
-        logger.info("Se accede a todos los productos.")
-        const existeProducto = await products.getAll()
-        if(existeProducto.length){
-            res.json(await products.getById(parseInt(id)))
-        } else return res.json({error: 'No existe el archivo solicitado'})
+        logger.info(req.sessionID)
+        req.logout(err=>{
+            if(err) return res.status(400).json({message:"hubo un error al cerrar sesion" + err})
+        })
+
+        return res.status(200).json({message:"Sesion cerrada!"})
     }
     catch(error){
-        logger.error("error en productos get id "+ error)
         res.status(500).send('Error en el servidor')
     }
-})
+});

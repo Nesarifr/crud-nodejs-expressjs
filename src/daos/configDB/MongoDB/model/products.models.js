@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export const productCollection = "productos"
+const productCollection = "productos"
 
 export const productSchema = new mongoose.Schema(
     {

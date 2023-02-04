@@ -1,10 +1,12 @@
-import { ContenedorMongo } from "../../managers/ContenedorMongo.js";
+import { MongoContainer } from "../../manager/mongo.manager.js";
 
 //crear una subclases de productos que trabaje con el contendor Archivos
-class ProductsDaoMongo extends ContenedorMongo{
-    constructor(schema, collection ){
+class ProductsDaoMongo extends MongoContainer{
+    
+    constructor(model ){
         //ejecutamos el contructor de clase ContenedorArchivo
-        super(schema, collection);
+        super(model);
+        
     }
 }
 

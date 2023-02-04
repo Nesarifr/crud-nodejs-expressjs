@@ -3,26 +3,35 @@ import mongoose from "mongoose";
 const userCollecction = "users";
 
 const userSchema = new mongoose.Schema({
-    //definimos las propiedades del documento user
-    nombre:{
-        type:String,
-        required:true
-    },
-    apellido:{
-        type:String
-    },
+    //propiedades del usuario que vamos a guardar en la base de datos
     email:{
         type:String,
-        required:true,
-        unique:true
+        unique:true,
+        required:true
     },
     password:{
         type:String,
         required:true
     },
-},
-{
-    timestamps:true
+    nombre:{
+        type:String,
+        required:true
+    },
+    direccion:{
+        type:String,
+    },
+    edad:{
+        type:Number,
+        required:true
+    },
+    telefono:{
+        type:String,
+        required:true
+    },
+    fotoUrl:{
+        type:String,
+        required:true
+    }
 });
 
 export const UserModel = mongoose.model(userCollecction, userSchema);

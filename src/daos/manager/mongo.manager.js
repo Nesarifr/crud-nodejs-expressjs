@@ -5,50 +5,52 @@ class MongoContainer{
 
     async getById(id){
         try {
-            const object = await this.model.findById(id);
-            if(!object){
-                return {message:`Error al buscar: no se encontró el id ${id}`, error:true};
+            let result = await this.model.find({id: id})
+            if(result.length){
+                return result
             } else {
-                return {message: object, error:false};
+                return {message: `No se encontro el objeto con el id : ${id} : ` + error}
             }
-        } catch (error) {
-            return {message:`Hubo un error ${error}`, error:true};
+        } 
+        catch (error) {
+            return {message: `Ocurrio un error en la busqueda del objeto con id : ${id} : ` + error}
         }
     }
 
     async getAll(){
         try {
-            const objects = await this.model.find();
+            const objects = await this.model.find()
             return objects;
         } catch (error) {
-            return [];
+            return {message: `Ocurrio un error en la busqueda de todos los  objetos  : ` + error}
         }
     }
 
-    async save(body){
+    async save(element){
         try {
-            const object = await this.model.create(body);
-            return `new document saved with id: ${object._id}`
+            let ultimoID = await this.lastID()
+            let result = await this.model.create({id: ultimoID, ...element})
+            return result.id
         } catch (error) {
-            return {message:`Error al guardar: ${error}`};
+            return {message: `Ocurrio un error al intentar guardar el nuevo objeto ${element.id}  : ` + error}
         }
     }
-
     async updateById(body, id){
         try {
-            await this.model.findByIdAndUpdate(id, body,{new:true});
-            return {message:"Update successfully"}
+            let elementUpdated = await this.model.updateOne({id: id}, body)
+            return elementUpdated
         } catch (error) {
-            return {message:`Error al actualizar: no se encontró el id ${id}`};
+            return {message: `Ocurrio un error en la actualizacion de objeto con id ${id}  : ` + error}
         }
+        
     }
-
-    async deleteById(id){
+    async deletedById(id){
         try {
-            await this.model.findByIdAndDelete(id);
-            return {message:"delete successfully"};
+            let result = await this.model.deleteOne({id: id});
+            return result
         } catch (error) {
-            return {message:`Error al borrar: no se encontró el id ${id}`};
+    
+            return {message: `Ocurrio un error al intentar borrar el objeto con id : ${id}  : ` + error}
         }
     }
 
@@ -59,6 +61,25 @@ class MongoContainer{
         } catch (error) {
             return {message:`Error al borrar todo: ${error}`};
         }
+    }
+
+    async lastID(){
+        try{
+            const data = await this.model.find()
+            if(data.length === 0){
+                return  1
+            }
+            else{
+                const length = data.length
+                const lastItem = data[length-1]
+                const lastItemId = lastItem.id
+                const id = lastItemId + 1
+                return id
+            }
+        } catch(error){
+            return error
+        }
+    
     }
 }
 

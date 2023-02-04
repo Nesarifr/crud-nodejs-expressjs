@@ -1,18 +1,36 @@
-import { ContenedorMongo } from "../../managers/ContenedorMongo.js";
+import { MongoContainer } from "../../manager/mongo.manager.js";
+import logger from "../../../logs/logger.js";
+
 
 //crear una subclases de productos que trabaje con el contendor Archivos
-class CarritoDaoMongo extends ContenedorMongo{
-    constructor(schema, collection){
+class CarritoDaoMongo extends MongoContainer{
+    constructor(model){
         //ejecutamos el contructor de clase ContenedorArchivo
-        super(schema, collection);
-    }
+        super(model);
     
-    async actualizaByID(id , actualizacion){
+    }
+    async save(element){
         try {
-            let result = await  this.model.find({carritoNum: id})
-            console.log(result);
+            if(element.userID){
+                let result = await this.model.findOne({userID: element.userID})
+                if(result){
+                    await this.model.updateOne({userID: element.userID}, {productos: element.productos})
+                }else {
+                    await this.model.create(element)
+                }
+                return element.userID
+            }
+            
+        } catch (error) {
+            return {message: `Ocurrio un error al intentar guardar el nuevo objeto ${element.id}  : ` + error}
+        }
+    }
+
+    async actualizaByID(userMail , actualizacion){
+        try {
+            let result = await  this.model.find({userID: userMail})
             if(result){
-                let elementUpdated = await this.model.updateOne({id: id}, actualizacion)
+                let elementUpdated = await this.model.updateOne({userID: userMail}, actualizacion)
                 return elementUpdated
             } else {
                 await this.save(actualizacion)
@@ -23,9 +41,9 @@ class CarritoDaoMongo extends ContenedorMongo{
         }
     }
 
-    async getById(id){
+    async getById(userMail){
         try {
-            let result = await  this.model.find({carritoNum: id})
+            let result = await  this.model.find({userID: userMail})
             if(result){
                 return result
             } return null
@@ -35,9 +53,9 @@ class CarritoDaoMongo extends ContenedorMongo{
         }
         
     }
-        async deletedById(id){
+        async deletedById(userMail){
         try {
-            let result = await this.model.deleteMany({carritoNum: id});
+            let result = await this.model.deleteMany({userID: userMail});
             return result
         } catch (error) {
             console.log(error);
@@ -45,24 +63,6 @@ class CarritoDaoMongo extends ContenedorMongo{
         }
     }
 
-    
-    async lastID(){
-        try{
-            const data = await this.model.find()
-            if(data.length === 0){
-                return  1
-            }
-            else{
-                const length = data.length
-                const lastItem = data[length-1]
-                const lastItemId = lastItem.carritoNum
-                const id = lastItemId
-                return id
-            }
-        } catch(error){
-            return error
-        }
-    }
 }
 
 export {CarritoDaoMongo}
